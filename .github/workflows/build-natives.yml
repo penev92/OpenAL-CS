@@ -1,0 +1,118 @@
+name: Build native dependencies
+
+env:
+    OPENALSOFT_VERSION: 1.20.1
+
+on:
+    workflow_call:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    windows:
+        name: Windows (x64 + x86)
+        runs-on: ubuntu-22.04
+        steps:
+            - name: Setup Dependencies
+              run: |
+                mkdir -p artifacts/x86
+                mkdir artifacts/x64
+
+            - name: Download natives
+              run: |
+                curl -s -L -O https://openal-soft.org/openal-binaries/openal-soft-${OPENALSOFT_VERSION}-bin.zip
+                unzip -j -d artifacts/x86 openal-soft-${OPENALSOFT_VERSION}-bin.zip openal-soft-${OPENALSOFT_VERSION}-bin/bin/Win32/soft_oal.dll
+                unzip -j -d artifacts/x64 openal-soft-${OPENALSOFT_VERSION}-bin.zip openal-soft-${OPENALSOFT_VERSION}-bin/bin/Win64/soft_oal.dll
+
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: Natives-Windows
+                path: ./artifacts
+
+    macos:
+        name: macOS (x64 + arm64)
+        runs-on: macos-11
+        steps:
+            - name: Setup Dependencies
+              run: |
+                mkdir -p artifacts/x86_64
+                mkdir artifacts/arm64
+
+            - name: Compile natives
+              run: |
+                curl -s -L -O https://openal-soft.org/openal-releases/openal-soft-${OPENALSOFT_VERSION}.tar.bz2
+                tar xf openal-soft-${OPENALSOFT_VERSION}.tar.bz2
+                cd openal-soft-${OPENALSOFT_VERSION}
+                cmake -B build -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DALSOFT_EXAMPLES=OFF -DALSOFT_UTILS=OFF -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.11
+                cmake --build build
+                lipo -thin arm64 build/libopenal.${OPENALSOFT_VERSION}.dylib -output ../artifacts/arm64/soft_oal.dylib
+                lipo -thin x86_64 build/libopenal.${OPENALSOFT_VERSION}.dylib -output ../artifacts/x86_64/soft_oal.dylib
+
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: Natives-MacOS
+                path: ./artifacts
+
+    linux-x64:
+        name: Linux (x64)
+        runs-on: ubuntu-22.04
+        container: centos:centos7
+        steps:
+            - name: Setup Dependencies
+              run: |
+                chown -R $(id -u):$(id -g) $PWD
+                yum -y install https://repo.ius.io/ius-release-el7.rpm centos-release-scl scl-utils
+                yum -y install devtoolset-8 cmake3 bzip2 patch
+                mkdir -p artifacts/x64
+
+            - name: Compile natives
+              run: |
+                source /opt/rh/devtoolset-8/enable
+                curl -s -L -O https://openal-soft.org/openal-releases/openal-soft-${OPENALSOFT_VERSION}.tar.bz2
+                tar xf openal-soft-${OPENALSOFT_VERSION}.tar.bz2
+                cd openal-soft-${OPENALSOFT_VERSION}/build
+                cmake3 .. -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
+                cmake3 --build .
+                cp libopenal.so ../../artifacts/x64/soft_oal.so
+
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: Natives-Linux(x64)
+                path: ./artifacts
+
+    linux-arm64:
+        runs-on: ubuntu-22.04
+        name: Linux (arm64)
+        steps:
+            - name: Setup dependencies and compile natives
+              uses: uraimo/run-on-arch-action@v2
+              with:
+                arch: aarch64
+                distro: ubuntu20.04
+                shell: /bin/sh
+                setup: |
+                  mkdir -p "${PWD}/artifacts/arm64"
+                dockerRunArgs: |
+                  --volume "${PWD}/artifacts:/artifacts"
+                env: |
+                  OPENALSOFT_VERSION: ${{ env.OPENALSOFT_VERSION }}
+                run: |
+                  apt-get update -q -y
+                  apt-get install -y build-essential curl cmake libasound2-dev portaudio19-dev libpulse-dev
+                  curl -s -L -O https://openal-soft.org/openal-releases/openal-soft-${OPENALSOFT_VERSION}.tar.bz2
+                  tar xf openal-soft-${OPENALSOFT_VERSION}.tar.bz2
+                  cd openal-soft-${OPENALSOFT_VERSION}/build
+                  cmake .. -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
+                  cmake --build .
+                  cp libopenal.so /artifacts/arm64/soft_oal.so
+
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: Natives-Linux(arm64)
+                path: ./artifacts
