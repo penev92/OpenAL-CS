@@ -1,0 +1,116 @@
+name: Package NuGet
+
+on:
+    push:
+        tags:
+            - '*'
+    workflow_dispatch:
+        inputs:
+            nugetPackageVersion:
+                description: "NuGet package version"
+                required: true
+            shouldCreateTag:
+                description: "Create a git tag + Release?"
+                required: true
+                type: boolean
+                default: true
+
+permissions:
+    contents: write # "write" needed for the "Tag a release" step.
+
+jobs:
+    compile-openal:
+        name: Build OpenAL-CS
+        uses: ./.github/workflows/build-openal.yml
+
+    compile-natives:
+        name: Build native dependencies
+        uses: ./.github/workflows/build-natives.yml
+
+    package-nuget:
+        name: Package NuGet
+        runs-on: ubuntu-22.04
+        needs: [compile-openal, compile-natives]
+        steps:
+            - name: Clone repository
+              uses: actions/checkout@v3
+
+            - name: Prepare environment variables
+              run: |
+                if [ "${{ github.event_name }}" = "push" ]; then
+                    echo "The git tag is ${GITHUB_REF#refs/tags/}"
+                    echo "PACKAGE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+                    echo "SHOULD_TAG_RELEASE=true" >> $GITHUB_ENV
+                else
+                    echo "This was ran manually with nuget package version ${{ github.event.inputs.nugetPackageVersion }}"
+                    echo "PACKAGE_VERSION=${{ github.event.inputs.nugetPackageVersion }}" >> $GITHUB_ENV
+                    echo "SHOULD_TAG_RELEASE=${{ github.event.inputs.shouldCreateTag }}" >> $GITHUB_ENV
+                fi
+
+            - name: Download artifacts - OpenAL-CS.dll
+              uses: actions/download-artifact@v3
+              with:
+                name: OpenAL-CS
+                path: ./bin
+
+            - name: Download artifacts - native - Windows
+              uses: actions/download-artifact@v3
+              with:
+                name: Natives-Windows
+                path: ./native/win
+
+            - name: Download artifacts - native - MacOS
+              uses: actions/download-artifact@v3
+              with:
+                name: Natives-MacOS
+                path: ./native/osx
+
+            - name: Download artifacts - native - Linux (x64)
+              uses: actions/download-artifact@v3
+              with:
+                name: Natives-Linux(x64)
+                path: ./native/linux
+
+            - name: Download artifacts - native - Linux (arm64)
+              uses: actions/download-artifact@v3
+              with:
+                name: Natives-Linux(arm64)
+                path: ./native/linux
+
+            - name: Setup NuGet.exe
+              uses: NuGet/setup-nuget@v1
+
+            - name: Package NuGet
+              run: |
+                nuget pack OpenRA-OpenAL-CS.nuspec -OutputDirectory ./nuget -version ${{ github.event.inputs.nugetPackageVersion }}
+
+            - name: Upload NuGet package to Artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: NuGet Package
+                path: ./nuget
+
+            - name: Tag a release - Add compiled native binaries
+              if: ${{ env.SHOULD_TAG_RELEASE == 'true' }}
+              uses: svenstaro/upload-release-action@v2
+              with:
+                repo_token: ${{ secrets.GITHUB_TOKEN }}
+                tag: ${{ env.PACKAGE_VERSION }}
+                overwrite: true
+                file_glob: true
+                file: ./native/*
+
+            - name: Tag a release - Add NuGet file
+              if: ${{ env.SHOULD_TAG_RELEASE == 'true' }}
+              uses: svenstaro/upload-release-action@v2
+              with:
+                repo_token: ${{ secrets.GITHUB_TOKEN }}
+                tag: ${{ env.PACKAGE_VERSION }}
+                overwrite: true
+                file_glob: true
+                file: ./nuget/*.nupkg
+
+            - name: Publish package to NuGet
+              if: ${{ env.SHOULD_TAG_RELEASE == 'true' }}
+              run: |
+                nuget push ./nuget/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey ${{ secrets.NUGET_KEY }}
