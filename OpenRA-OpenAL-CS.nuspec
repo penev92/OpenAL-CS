@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>OpenRA-OpenAL-CS</id>
-    <version>1.0.19</version>
+    <version>0.0.1</version> <!-- Version is set during packaging. -->
     <authors>OpenRA</authors>
     <owners>OpenRA</owners>
     <projectUrl>https://github.com/OpenRA/OpenAL-CS</projectUrl>
