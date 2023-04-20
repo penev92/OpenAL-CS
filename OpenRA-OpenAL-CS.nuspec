@@ -13,7 +13,7 @@
     - Copyright (c) 2014-2015 Ethan Lee
     - Copyright (c) Creative Labs
     </copyright>
-    <license type="file">LICENSE</license>
+    <license type="expression">LGPL-2.0-only AND MIT</license>
     <tags>OpenRA</tags>
     <dependencies>
       <group targetFramework=".NETStandard2.0" />
@@ -30,6 +30,5 @@
     <file src="native/linux/arm64/soft_oal.so" target="native/linux-arm64" />
     <file src="native/osx/x86_64/soft_oal.dylib" target="native/osx-x64" />
     <file src="native/osx/arm64/soft_oal.dylib" target="native/osx-arm64" />
-    <file src="LICENSE" target="LICENSE" />
   </files>
 </package>
