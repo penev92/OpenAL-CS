@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <package>
   <metadata>
     <id>OpenRA-OpenAL-CS</id>
@@ -9,10 +9,11 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>OpenAL-CS modified for OpenRA</description>
     <copyright>
+    - Copyright (c) The OpenRA Developers and Contributors
     - Copyright (c) 2014-2015 Ethan Lee
     - Copyright (c) Creative Labs
     </copyright>
-    <license type="expression">LGPL-2.0-only</license>
+    <license type="file">LICENSE</license>
     <tags>OpenRA</tags>
     <dependencies>
       <group targetFramework=".NETStandard2.0" />
