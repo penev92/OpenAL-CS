@@ -10,8 +10,6 @@ This software includes a managed wrapper project and native binaries that are di
 
 - The native binaries, called OpenAL Soft, are licensed under the LGPL2 License, which is a copyleft open-source license that permits the distribution of proprietary software that links to or uses the LGPL2-licensed software components.
 
-For more information about these licenses, please refer to the LICENSE-MIT and LICENSE-LGPL2 files included in this distribution.
-
 MIT License
 -----------
 /* OpenAL# - C# Wrapper for OpenAL Soft

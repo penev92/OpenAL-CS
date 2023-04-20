@@ -30,8 +30,6 @@
     <file src="native/linux/arm64/soft_oal.so" target="native/linux-arm64" />
     <file src="native/osx/x86_64/soft_oal.dylib" target="native/osx-x64" />
     <file src="native/osx/arm64/soft_oal.dylib" target="native/osx-arm64" />
-    <file src="LICENSE" target="." />
-    <file src="LICENSE-LGPL2" target="." />
-    <file src="LICENSE-MIT" target="." />
+    <file src="LICENSE" target="LICENSE" />
   </files>
 </package>
