@@ -35,7 +35,7 @@ namespace OpenAL
 {
 	public static class EFX
 	{
-		private const string nativeLibName = "soft_oal.dll";
+		private const string nativeLibName = "soft_oal";
 
 		/* typedef int ALenum; */
 		public const int AL_METERS_PER_UNIT =				0x20004;

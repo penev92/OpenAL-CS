@@ -35,7 +35,7 @@ namespace OpenAL
 {
 	public static class AL10
 	{
-		private const string nativeLibName = "soft_oal.dll";
+		private const string nativeLibName = "soft_oal";
 
 		/* typedef int ALenum; */
 		public const int AL_NONE =			0x0000;
@@ -46,7 +46,7 @@ namespace OpenAL
 
 		public const int AL_CONE_INNER_ANGLE =		0x1001;
 		public const int AL_CONE_OUTER_ANGLE =		0x1002;
-		
+
 		public const int AL_PITCH =			0x1003;
 		public const int AL_POSITION =			0x1004;
 		public const int AL_DIRECTION =			0x1005;
