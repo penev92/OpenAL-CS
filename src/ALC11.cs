@@ -35,7 +35,7 @@ namespace OpenAL
 {
 	public static class ALC11
 	{
-		private const string nativeLibName = "soft_oal.dll";
+		private const string nativeLibName = "soft_oal";
 
 		/* typedef int ALenum */
 		public const int ALC_MONO_SOURCES =			0x1010;

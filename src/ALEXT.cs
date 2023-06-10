@@ -35,7 +35,7 @@ namespace OpenAL
 {
 	public static class ALEXT
 	{
-		private const string nativeLibName = "soft_oal.dll";
+		private const string nativeLibName = "soft_oal";
 
 		/* TODO: All OpenAL Soft extensions! Complete as needed. */
 
